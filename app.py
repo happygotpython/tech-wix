@@ -3,11 +3,15 @@ import sqlite3
 import psycopg2
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
+from werkzeug.middleware.proxy_fix import ProxyFix
 import cloudinary
 import cloudinary.uploader
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'techwix_secure_secret_key')
+
+# Fix cookie and proxy handling behind Render's HTTPS load balancer
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 # Configure Cloudinary using Environment Variables[cite: 1, 8]
 cloudinary.config(
@@ -501,6 +505,7 @@ def admin_login():
     error = None
     if request.method == 'POST':
         if request.form.get('username') == ADMIN_USER and request.form.get('password') == ADMIN_PASS:
+            session.permanent = True  # Keep login session alive across requests
             session['is_admin'] = True
             return redirect(url_for('index'))
         error = 'Invalid credentials'
