@@ -141,6 +141,42 @@
         {% endif %}
     </div>
 
+    <!-- Customer Reviews & Sold Products Showcase Section -->
+    <div class="pt-10 border-t border-gray-200 dark:border-zinc-800">
+        <div class="text-center space-y-2 mb-8">
+            <h2 class="text-2xl font-black text-gray-900 dark:text-white">Customer Reviews & Sold Deliveries</h2>
+            <p class="text-xs text-zinc-500">Real feedback and videos of recent deliveries to our trusted clients.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% if showcase_items %}
+                {% for item in showcase_items %}
+                <div class="bg-white dark:bg-zinc-900 rounded-3xl p-5 border border-gray-100 dark:border-zinc-800 flex flex-col justify-between space-y-4">
+                    <div class="w-full h-56 bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800 flex items-center justify-center">
+                        {% if item.media_type == 'video' %}
+                            <video src="{{ item.media_url }}" controls class="w-full h-full object-cover"></video>
+                        {% else %}
+                            <img src="{{ item.media_url }}" alt="{{ item.title }}" class="w-full h-full object-cover">
+                        {% endif %}
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="font-bold text-gray-900 dark:text-white text-sm">{{ item.title }}</h3>
+                        <p class="text-xs text-zinc-400">{{ item.caption }}</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-zinc-800 text-[11px] text-zinc-500">
+                        <span class="font-semibold text-[#1DB954]">Verified Buyer</span>
+                        <span>{{ item.customer_name }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-span-full py-10 text-center text-zinc-500 text-xs">
+                    No customer delivery showcases uploaded yet. Admin can add them via <a href="{{ url_for('add_showcase') }}" class="text-[#1DB954] underline">/admin/showcase/add</a>.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
     <!-- Contact Us & Location Section Embedded on Homepage -->
     <div id="contact-section" class="pt-10 border-t border-gray-200 dark:border-zinc-800">
         <div class="text-center space-y-2 mb-8">

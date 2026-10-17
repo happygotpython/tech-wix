@@ -9,7 +9,7 @@ import cloudinary.uploader
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'techwix_secure_secret_key')
 
-# Configure Cloudinary using Environment Variables
+# Configure Cloudinary using Environment Variables[cite: 1]
 cloudinary.config(
     cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
     api_key=os.getenv('CLOUDINARY_API_KEY'),
@@ -63,9 +63,38 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS customer_showcase (
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                media_url TEXT NOT NULL,
+                media_type TEXT DEFAULT 'image',
+                customer_name TEXT,
+                caption TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Seed sample products into Supabase PostgreSQL if empty
+        cursor.execute('SELECT COUNT(*) FROM products')
+        if cursor.fetchone()[0] == 0:
+            sample_products = [
+                ("iPhone 14 Pro Max", "Phones", "Brand New", 1450000.00, "256GB / 6GB RAM", "https://images.unsplash.com/photo-1678685888221-cda773a3dcdb?auto=format&fit=crop&q=80&w=600"),
+                ("MacBook Pro 16 M3", "Laptops", "UK Used", 2850000.00, "512GB / 18GB RAM", "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=600"),
+                ("iPad Air 5th Gen", "iPads", "Brand New", 750000.00, "64GB / WiFi", "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&q=80&w=600"),
+                ("Samsung Galaxy S23 Ultra", "Phones", "Nigeria Used", 980000.00, "512GB / 12GB RAM", "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&q=80&w=600")
+            ]
+            for p in sample_products:
+                cursor.execute('''
+                    INSERT INTO products (name, category, condition, price, storage, image)
+                    VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+                ''', p)
+                pid = cursor.fetchone()[0]
+                cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (%s, %s, %s)', (pid, p[5], 'image'))
+        
         conn.commit()
     else:
-        # SQLite syntax for local
+        # SQLite syntax for local development
         with conn:
             conn.execute('''
                 CREATE TABLE IF NOT EXISTS products (
@@ -96,6 +125,17 @@ def init_db():
                     comment TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
+                )
+            ''')
+            conn.execute('''
+                CREATE TABLE IF NOT EXISTS customer_showcase (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    media_url TEXT NOT NULL,
+                    media_type TEXT DEFAULT 'image',
+                    customer_name TEXT,
+                    caption TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
             
@@ -174,12 +214,18 @@ def index():
     if DATABASE_URL:
         columns = [desc[0] for desc in cursor.description]
         products = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        cursor.execute("SELECT * FROM customer_showcase ORDER BY id DESC")
+        sc_cols = [d[0] for d in cursor.description]
+        showcase_items = [dict(zip(sc_cols, r)) for r in cursor.fetchall()]
     else:
         products = cursor.fetchall()
+        cursor.execute("SELECT * FROM customer_showcase ORDER BY id DESC")
+        showcase_items = cursor.fetchall()
         
     conn.close()
 
-    return render_template('index.html', products=products, current_category=category, current_condition=condition, search_query=search_query, current_sort=sort, min_price=min_price, max_price=max_price, contact_success=contact_success)
+    return render_template('index.html', products=products, showcase_items=showcase_items, current_category=category, current_condition=condition, search_query=search_query, current_sort=sort, min_price=min_price, max_price=max_price, contact_success=contact_success)
 
 @app.route('/product/<int:product_id>', methods=['GET', 'POST'])
 def product_detail(product_id):
@@ -250,10 +296,10 @@ def add_product():
         
         main_image_url = 'https://via.placeholder.com/400'
         
-        # Upload main image to Cloudinary in techwix_assets folder
+        # Upload main image with resource_type="auto" to support both pics and vids
         file = request.files.get('main_image')
         if file and file.filename != '':
-            upload_res = cloudinary.uploader.upload(file, folder="techwix_assets")
+            upload_res = cloudinary.uploader.upload(file, folder="techwix_assets", resource_type="auto")
             main_image_url = upload_res.get('secure_url')
         elif request.form.get('image_url'):
             main_image_url = request.form.get('image_url')
@@ -278,11 +324,11 @@ def add_product():
                 pid = cursor.lastrowid
                 cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (?, ?, ?)', (pid, main_image_url, 'image'))
 
-        # Gallery media uploads into techwix_assets folder
+        # Gallery media uploads with resource_type="auto"
         gallery_files = request.files.getlist('gallery_files')
         for g_file in gallery_files:
             if g_file and g_file.filename != '':
-                g_upload = cloudinary.uploader.upload(g_file, folder="techwix_assets")
+                g_upload = cloudinary.uploader.upload(g_file, folder="techwix_assets", resource_type="auto")
                 file_url = g_upload.get('secure_url')
                 resource_type = g_upload.get('resource_type')
                 media_type = 'video' if resource_type == 'video' else 'image'
@@ -298,6 +344,46 @@ def add_product():
         return redirect(url_for('index'))
 
     return render_template('add_product.html')
+
+# Admin Route to Add Customer Reviews & Sold Products Showcase
+@app.route('/admin/showcase/add', methods=['GET', 'POST'])
+def add_showcase():
+    if not session.get('is_admin'):
+        return redirect(url_for('admin_login'))
+    
+    if request.method == 'POST':
+        title = request.form.get('title')
+        customer_name = request.form.get('customer_name')
+        caption = request.form.get('caption')
+        
+        media_url = ''
+        media_type = 'image'
+        
+        file = request.files.get('media_file')
+        if file and file.filename != '':
+            upload_res = cloudinary.uploader.upload(file, folder="techwix_assets", resource_type="auto")
+            media_url = upload_res.get('secure_url')
+            if upload_res.get('resource_type') == 'video':
+                media_type = 'video'
+
+        conn = get_db()
+        cursor = conn.cursor()
+        if DATABASE_URL:
+            cursor.execute('''
+                INSERT INTO customer_showcase (title, media_url, media_type, customer_name, caption)
+                VALUES (%s, %s, %s, %s, %s)
+            ''', (title, media_url, media_type, customer_name, caption))
+            conn.commit()
+        else:
+            with conn:
+                conn.execute('''
+                    INSERT INTO customer_showcase (title, media_url, media_type, customer_name, caption)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (title, media_url, media_type, customer_name, caption))
+        conn.close()
+        return redirect(url_for('index'))
+
+    return render_template('add_showcase.html')
 
 @app.route('/admin/manage')
 def admin_manage():
@@ -346,7 +432,7 @@ def admin_edit(product_id):
         image_url = product['image']
         file = request.files.get('main_image')
         if file and file.filename != '':
-            upload_res = cloudinary.uploader.upload(file, folder="techwix_assets")
+            upload_res = cloudinary.uploader.upload(file, folder="techwix_assets", resource_type="auto")
             image_url = upload_res.get('secure_url')
         elif request.form.get('image_url'):
             image_url = request.form.get('image_url')

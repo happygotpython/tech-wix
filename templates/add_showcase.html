@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-xl mx-auto bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-100 dark:border-zinc-800 shadow-sm space-y-6">
+    <div>
+        <h2 class="text-2xl font-black text-gray-900 dark:text-white">Add Customer Showcase</h2>
+        <p class="text-xs text-zinc-500 mt-1">Upload delivery videos, sold product pictures, or customer review screenshots.</p>
+    </div>
+
+    <form action="{{ url_for('add_showcase') }}" method="POST" enctype="multipart/form-data" class="space-y-4 text-xs">
+        <div>
+            <label class="block font-semibold text-gray-700 dark:text-zinc-300 mb-1">Title / Item Sold</label>
+            <input type="text" name="title" required placeholder="e.g. Delivered iPhone 14 Pro Max to Lagos" class="w-full border border-gray-300 dark:border-zinc-700 bg-white dark:bg-black text-gray-900 dark:text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+        </div>
+
+        <div>
+            <label class="block font-semibold text-gray-700 dark:text-zinc-300 mb-1">Customer Name</label>
+            <input type="text" name="customer_name" required placeholder="e.g. Mr. Chinedu" class="w-full border border-gray-300 dark:border-zinc-700 bg-white dark:bg-black text-gray-900 dark:text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+        </div>
+
+        <div>
+            <label class="block font-semibold text-gray-700 dark:text-zinc-300 mb-1">Media File (Image or Video)</label>
+            <input type="file" name="media_file" required accept="image/*,video/*" class="w-full border border-gray-300 dark:border-zinc-700 bg-white dark:bg-black text-gray-900 dark:text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+        </div>
+
+        <div>
+            <label class="block font-semibold text-gray-700 dark:text-zinc-300 mb-1">Review / Caption</label>
+            <textarea name="caption" rows="3" required placeholder="What did the customer say about the delivery?" class="w-full border border-gray-300 dark:border-zinc-700 bg-white dark:bg-black text-gray-900 dark:text-white rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1DB954]"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between pt-4">
+            <a href="{{ url_for('admin_manage') }}" class="text-zinc-500 hover:underline">Cancel</a>
+            <button type="submit" class="bg-[#1DB954] text-black font-bold px-6 py-3 rounded-xl hover:bg-[#1ed760] transition shadow-sm">
+                Upload Showcase Item
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
