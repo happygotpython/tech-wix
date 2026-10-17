@@ -10,17 +10,14 @@ import cloudinary.uploader
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'techwix_secure_secret_key')
 
-# Fix cookie and proxy handling behind Render's HTTPS load balancer
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
-# Configure Cloudinary using Environment Variables[cite: 1, 8]
 cloudinary.config(
     cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
     api_key=os.getenv('CLOUDINARY_API_KEY'),
     api_secret=os.getenv('CLOUDINARY_API_SECRET')
 )
 
-# Database configuration (Supabase Postgres in production, local SQLite for development)[cite: 8]
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 def get_db():
@@ -37,7 +34,6 @@ def init_db():
     cursor = conn.cursor()
     
     if DATABASE_URL:
-        # PostgreSQL syntax for Supabase[cite: 8]
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS products (
                 id SERIAL PRIMARY KEY,
@@ -79,7 +75,6 @@ def init_db():
             )
         ''')
         
-        # Seed sample products into Supabase PostgreSQL if empty[cite: 8]
         cursor.execute('SELECT COUNT(*) FROM products')
         if cursor.fetchone()[0] == 0:
             sample_products = [
@@ -98,7 +93,6 @@ def init_db():
         
         conn.commit()
     else:
-        # SQLite syntax for local development[cite: 8]
         with conn:
             conn.execute('''
                 CREATE TABLE IF NOT EXISTS products (
@@ -303,12 +297,13 @@ def add_product():
         try:
             file = request.files.get('main_image')
             if file and file.filename != '':
-                upload_res = cloudinary.uploader.upload(file, folder="techwix_assets", resource_type="auto")
+                file.stream.seek(0)
+                upload_res = cloudinary.uploader.upload(file.stream, folder="techwix_assets", resource_type="auto")
                 main_image_url = upload_res.get('secure_url')
             elif request.form.get('image_url'):
                 main_image_url = request.form.get('image_url')
         except Exception as e:
-            print(f"Main image upload error: {e}")
+            return f"Main image upload error: {e}", 500
 
         conn = get_db()
         cursor = conn.cursor()
@@ -331,30 +326,25 @@ def add_product():
                     pid = cursor.lastrowid
                     cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (?, ?, ?)', (pid, main_image_url, 'image'))
 
-            # Gallery media uploads with resource_type="auto" and safe error catching
             gallery_files = request.files.getlist('gallery_files')
             for g_file in gallery_files:
                 if g_file and g_file.filename != '':
-                    try:
-                        g_upload = cloudinary.uploader.upload(g_file, folder="techwix_assets", resource_type="auto")
-                        file_url = g_upload.get('secure_url')
-                        resource_type = g_upload.get('resource_type')
-                        media_type = 'video' if resource_type == 'video' else 'image'
-                        
-                        if DATABASE_URL:
-                            cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (%s, %s, %s)', (pid, file_url, media_type))
-                            conn.commit()
-                        else:
-                            with conn:
-                                cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (?, ?, ?)', (pid, file_url, media_type))
-                    except Exception as ge:
-                        print(f"Gallery file upload error for {g_file.filename}: {ge}")
-                        if DATABASE_URL:
-                            conn.rollback()
+                    g_file.stream.seek(0)
+                    g_upload = cloudinary.uploader.upload(g_file.stream, folder="techwix_assets", resource_type="auto")
+                    file_url = g_upload.get('secure_url')
+                    resource_type = g_upload.get('resource_type')
+                    media_type = 'video' if resource_type == 'video' else 'image'
+                    
+                    if DATABASE_URL:
+                        cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (%s, %s, %s)', (pid, file_url, media_type))
+                        conn.commit()
+                    else:
+                        with conn:
+                            cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (?, ?, ?)', (pid, file_url, media_type))
         except Exception as db_err:
-            print(f"Database error during product add: {db_err}")
             if DATABASE_URL:
                 conn.rollback()
+            return f"Database or Upload error: {db_err}", 500
         finally:
             conn.close()
 
@@ -362,7 +352,6 @@ def add_product():
 
     return render_template('add_product.html')
 
-# Admin Route to Add Customer Reviews & Sold Products Showcase
 @app.route('/admin/showcase/add', methods=['GET', 'POST'])
 def add_showcase():
     if not session.get('is_admin'):
@@ -379,12 +368,13 @@ def add_showcase():
         try:
             file = request.files.get('media_file')
             if file and file.filename != '':
-                upload_res = cloudinary.uploader.upload(file, folder="techwix_assets", resource_type="auto")
+                file.stream.seek(0)
+                upload_res = cloudinary.uploader.upload(file.stream, folder="techwix_assets", resource_type="auto")
                 media_url = upload_res.get('secure_url')
                 if upload_res.get('resource_type') == 'video':
                     media_type = 'video'
         except Exception as e:
-            print(f"Showcase media upload error: {e}")
+            return f"Showcase upload error: {e}", 500
 
         conn = get_db()
         cursor = conn.cursor()
@@ -397,14 +387,14 @@ def add_showcase():
                 conn.commit()
             else:
                 with conn:
-                    conn.execute('''
+                    cursor.execute('''
                         INSERT INTO customer_showcase (title, media_url, media_type, customer_name, caption)
                         VALUES (?, ?, ?, ?, ?)
                     ''', (title, media_url, media_type, customer_name, caption))
         except Exception as db_err:
-            print(f"Database error during showcase add: {db_err}")
             if DATABASE_URL:
                 conn.rollback()
+            return f"Database error during showcase add: {db_err}", 500
         finally:
             conn.close()
 
@@ -460,12 +450,13 @@ def admin_edit(product_id):
         try:
             file = request.files.get('main_image')
             if file and file.filename != '':
-                upload_res = cloudinary.uploader.upload(file, folder="techwix_assets", resource_type="auto")
+                file.stream.seek(0)
+                upload_res = cloudinary.uploader.upload(file.stream, folder="techwix_assets", resource_type="auto")
                 image_url = upload_res.get('secure_url')
             elif request.form.get('image_url'):
                 image_url = request.form.get('image_url')
         except Exception as e:
-            print(f"Edit image upload error: {e}")
+            return f"Edit image upload error: {e}", 500
             
         if DATABASE_URL:
             cursor.execute('''
@@ -505,7 +496,7 @@ def admin_login():
     error = None
     if request.method == 'POST':
         if request.form.get('username') == ADMIN_USER and request.form.get('password') == ADMIN_PASS:
-            session.permanent = True  # Keep login session alive across requests
+            session.permanent = True
             session['is_admin'] = True
             return redirect(url_for('index'))
         error = 'Invalid credentials'
