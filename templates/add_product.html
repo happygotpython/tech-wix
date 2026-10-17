@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border border-gray-100 dark:border-zinc-800 p-8">
+    <h1 class="text-2xl font-black text-gray-900 dark:text-white mb-6">Add New Gadget & Media</h1>
+
+    <form action="{{ url_for('add_product') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Product Name</label>
+            <input type="text" name="name" required placeholder="e.g. iPhone 15 Pro Max" class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Category</label>
+                <select name="category" required class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+                    <option value="Phones">Phones</option>
+                    <option value="Laptops">Laptops</option>
+                    <option value="iPads">iPads & Tablets</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Condition</label>
+                <select name="condition" required class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+                    <option value="Brand New">Brand New</option>
+                    <option value="UK Used">UK Used</option>
+                    <option value="Nigeria Used">Nigeria Used</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Price ($)</label>
+                <input type="number" step="0.01" name="price" required placeholder="999.99" class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Specs (Storage / RAM)</label>
+                <input type="text" name="storage" placeholder="e.g. 512GB / 8GB RAM" class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+            </div>
+        </div>
+
+        <!-- Local Cover Image Upload -->
+        <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Main Cover Image (Upload from Local Storage)</label>
+            <input type="file" name="main_image" accept="image/*" class="w-full text-xs text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#1DB954] file:text-black hover:file:bg-[#1ed760] cursor-pointer">
+            <p class="text-[10px] text-zinc-500 mt-1">Or paste image URL as fallback:</p>
+            <input type="text" name="image_url" placeholder="https://..." class="w-full mt-1 border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-2 bg-white dark:bg-black text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+        </div>
+
+        <!-- Local Gallery Media Upload (Images & Videos) -->
+        <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Additional Gallery Images & Videos (Select Multiple from Local)</label>
+            <input type="file" name="gallery_files" multiple accept="image/*,video/mp4,video/webm" class="w-full text-xs text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-black cursor-pointer">
+            <p class="text-[10px] text-zinc-500 mt-1">You can select multiple photos and MP4 videos to build the interactive product slideshow gallery.</p>
+        </div>
+
+        <button type="submit" class="w-full bg-[#1DB954] text-black font-bold py-3.5 px-6 rounded-xl hover:bg-[#1ed760] transition shadow-sm text-sm">
+            Publish Product
+        </button>
+    </form>
+</div>
+{% endblock %}

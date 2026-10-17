@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border border-gray-100 dark:border-zinc-800 p-8">
+    <h1 class="text-2xl font-black text-gray-900 dark:text-white mb-6">Edit Gadget</h1>
+
+    <form action="{{ url_for('admin_edit', product_id=product.id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Product Name</label>
+            <input type="text" name="name" value="{{ product.name }}" required class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Category</label>
+                <select name="category" required class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+                    <option value="Phones" {% if product.category == 'Phones' %}selected{% endif %}>Phones</option>
+                    <option value="Laptops" {% if product.category == 'Laptops' %}selected{% endif %}>Laptops</option>
+                    <option value="iPads" {% if product.category == 'iPads' %}selected{% endif %}>iPads & Tablets</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Condition</label>
+                <select name="condition" required class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+                    <option value="Brand New" {% if product.condition == 'Brand New' %}selected{% endif %}>Brand New</option>
+                    <option value="UK Used" {% if product.condition == 'UK Used' %}selected{% endif %}>UK Used</option>
+                    <option value="Nigeria Used" {% if product.condition == 'Nigeria Used' %}selected{% endif %}>Nigeria Used</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Price (₦)</label>
+                <input type="number" step="0.01" name="price" value="{{ product.price }}" required class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Specs (Storage / RAM)</label>
+                <input type="text" name="storage" value="{{ product.storage }}" class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Update Cover Image (Optional)</label>
+            <input type="file" name="main_image" accept="image/*" class="w-full text-xs text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#1DB954] file:text-black hover:file:bg-[#1ed760] cursor-pointer">
+            <input type="text" name="image_url" value="{{ product.image }}" placeholder="Or image URL..." class="w-full mt-2 border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-2 bg-white dark:bg-black text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+        </div>
+
+        <div class="flex items-center gap-4 pt-2">
+            <button type="submit" class="flex-1 bg-[#1DB954] text-black font-bold py-3.5 px-6 rounded-xl hover:bg-[#1ed760] transition shadow-sm text-sm">
+                Save Changes
+            </button>
+            <a href="{{ url_for('admin_manage') }}" class="bg-zinc-800 text-white font-semibold py-3.5 px-6 rounded-xl hover:bg-zinc-700 transition text-sm text-center">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

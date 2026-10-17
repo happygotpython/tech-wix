@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <div class="bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border border-gray-100 dark:border-zinc-800 p-8 grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+        <div class="space-y-4">
+            <!-- Main Active Media Viewer -->
+            <div class="w-full h-80 rounded-2xl bg-gray-50 dark:bg-black p-4 border border-zinc-800 flex items-center justify-center overflow-hidden relative">
+                <div id="main-media-container" class="w-full h-full flex items-center justify-center">
+                    {% if media_items %}
+                        {% set first_item = media_items[0] %}
+                        {% if first_item.media_type == 'video' %}
+                            <video controls class="w-full h-full object-contain rounded-xl bg-black">
+                                <source src="{{ first_item.file_url }}" type="video/mp4">
+                            </video>
+                        {% else %}
+                            <img id="active-slide-img" src="{{ first_item.file_url }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                        {% endif %}
+                    {% else %}
+                        <img src="{{ product.image }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Thumbnail Gallery Strip -->
+            {% if media_items %}
+            <div class="flex space-x-3 overflow-x-auto pb-2 scrollbar-none">
+                {% for item in media_items %}
+                <button type="button" onclick="switchSlide('{{ item.file_url }}', '{{ item.media_type }}')" class="w-16 h-16 rounded-xl border-2 border-zinc-700 hover:border-[#1DB954] overflow-hidden bg-black shrink-0 transition p-1 focus:outline-none">
+                    {% if item.media_type == 'video' %}
+                    <div class="w-full h-full flex items-center justify-center text-[10px] text-white font-bold bg-zinc-900">VIDEO</div>
+                    {% else %}
+                    <img src="{{ item.file_url }}" alt="thumb" class="w-full h-full object-cover">
+                    {% endif %}
+                </button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <div class="flex space-x-2 mb-3">
+                <span class="text-xs font-semibold uppercase tracking-wider text-[#1DB954] bg-[#1DB954]/10 border border-[#1DB954]/30 px-3 py-1 rounded-md">{{ product.category }}</span>
+                <span class="text-xs font-semibold uppercase tracking-wider text-[#1DB954] bg-[#1DB954]/10 border border-[#1DB954]/30 px-3 py-1 rounded-md">{{ product.condition }}</span>
+            </div>
+            
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white mt-2">{{ product.name }}</h1>
+            <p class="text-gray-500 dark:text-zinc-400 text-sm mt-2">Specs: <span class="font-semibold text-gray-800 dark:text-zinc-200">{{ product.storage }}</span></p>
+            
+            <div class="text-3xl font-black text-gray-900 dark:text-white my-6">₦{{ "{:,.2f}".format(product.price) }}</div>
+            
+            <!-- Action Buttons: Add to Cart & WhatsApp Quick Buy -->
+            <div class="space-y-3">
+                <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
+                    <button type="submit" class="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3.5 px-6 rounded-xl transition shadow-sm text-xs">
+                        Add to Cart
+                    </button>
+                </form>
+
+                <a href="https://wa.me/2348000000000?text=Hi%20Techwix,%20I'm%20interested%20in%20buying%20the%20{{ product.name }}%20(%E2%82%A6{{ '{:,.2f}'.format(product.price) }}).%20Is%20it%20still%20available?" target="_blank" class="w-full bg-[#25D366] hover:bg-[#20ba5a] text-black font-bold py-3.5 px-6 rounded-xl transition shadow-sm text-xs flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                    Chat on WhatsApp to Buy
+                </a>
+            </div>
+
+            <div class="mt-6">
+                <a href="{{ url_for('index') }}" class="text-[#1DB954] hover:underline text-xs font-medium">Back to Tech<span class="text-[#1DB954]">wix</span> Store</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border border-gray-100 dark:border-zinc-800 p-8">
+        <h2 class="text-xl font-black text-gray-900 dark:text-white mb-6">Customer Reviews</h2>
+
+        <form action="{{ url_for('product_detail', product_id=product.id) }}" method="POST" class="space-y-4 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">Rating (1 to 5 Stars)</label>
+                    <select name="rating" required class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-2.5 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+                        <option value="5">5 - Excellent</option>
+                        <option value="4">4 - Very Good</option>
+                        <option value="3">3 - Good</option>
+                        <option value="2">2 - Fair</option>
+                        <option value="1">1 - Poor</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1">Your Review</label>
+                <textarea name="comment" rows="3" required placeholder="Write your experience with this device..." class="w-full border border-gray-300 dark:border-zinc-700 bg-white dark:bg-black text-gray-900 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]"></textarea>
+            </div>
+            <button type="submit" class="bg-zinc-900 dark:bg-zinc-800 text-white font-semibold py-2.5 px-6 rounded-xl text-sm hover:bg-black transition border border-zinc-700">
+                Submit Review
+            </button>
+        </form>
+
+        <div class="divide-y divide-gray-100 dark:divide-zinc-800">
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="py-4 space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-[#1DB954]">{{ review.rating }} / 5 Stars</span>
+                        <span class="text-[10px] text-zinc-500">{{ review.created_at[:10] }}</span>
+                    </div>
+                    <p class="text-sm text-gray-700 dark:text-zinc-300">{{ review.comment }}</p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-xs text-zinc-500 py-4">No reviews yet. Be the first to review this device.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchSlide(url, type) {
+        const container = document.getElementById('main-media-container');
+        if (type === 'video') {
+            container.innerHTML = `<video controls class="w-full h-full object-contain rounded-xl bg-black"><source src="${url}" type="video/mp4"></video>`;
+        } else {
+            container.innerHTML = `<img src="${url}" alt="Product Media" class="w-full h-full object-contain">`;
+        }
+    }
+</script>
+{% endblock %}
