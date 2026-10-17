@@ -30,28 +30,28 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Price ($)</label>
-                <input type="number" step="0.01" name="price" required placeholder="999.99" class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Price (₦)</label>
+                <input type="number" step="0.01" name="price" required placeholder="1450000" class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Specs (Storage / RAM)</label>
-                <input type="text" name="storage" placeholder="e.g. 512GB / 8GB RAM" class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Specs (Multiple Lines Allowed)</label>
+                <textarea name="storage" rows="3" placeholder="e.g. 256GB Storage&#10;6GB RAM&#10;Battery Health: 92%" class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-white dark:bg-black text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#1DB954]"></textarea>
             </div>
         </div>
 
         <!-- Local Cover Image Upload -->
         <div>
             <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Main Cover Image (Upload from Local Storage)</label>
-            <input type="file" name="main_image" accept="image/*" class="w-full text-xs text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#1DB954] file:text-black hover:file:bg-[#1ed760] cursor-pointer">
+            <input type="file" name="main_image" accept="image/*,video/*" class="w-full text-xs text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#1DB954] file:text-black hover:file:bg-[#1ed760] cursor-pointer">
             <p class="text-[10px] text-zinc-500 mt-1">Or paste image URL as fallback:</p>
             <input type="text" name="image_url" placeholder="https://..." class="w-full mt-1 border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-2 bg-white dark:bg-black text-gray-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-[#1DB954]">
         </div>
 
-        <!-- Local Gallery Media Upload (Images & Videos) -->
+        <!-- Local Gallery Media Upload (Multiple Images & Videos) -->
         <div>
-            <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Additional Gallery Images & Videos (Select Multiple from Local)</label>
-            <input type="file" name="gallery_files" multiple accept="image/*,video/mp4,video/webm" class="w-full text-xs text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-black cursor-pointer">
-            <p class="text-[10px] text-zinc-500 mt-1">You can select multiple photos and MP4 videos to build the interactive product slideshow gallery.</p>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-2">Additional Gallery Images & Videos (Select Multiple)</label>
+            <input type="file" name="gallery_files" multiple accept="image/*,video/*" class="w-full text-xs text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-black cursor-pointer">
+            <p class="text-[10px] text-zinc-500 mt-1">Hold Ctrl (or Cmd on Mac) while selecting files to pick multiple photos and videos at once.</p>
         </div>
 
         <button type="submit" class="w-full bg-[#1DB954] text-black font-bold py-3.5 px-6 rounded-xl hover:bg-[#1ed760] transition shadow-sm text-sm">
