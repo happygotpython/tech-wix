@@ -297,8 +297,7 @@ def add_product():
         try:
             file = request.files.get('main_image')
             if file and file.filename != '':
-                file.stream.seek(0)
-                upload_res = cloudinary.uploader.upload(file.stream, folder="techwix_assets", resource_type="auto")
+                upload_res = cloudinary.uploader.upload(file, folder="techwix_assets", resource_type="auto")
                 main_image_url = upload_res.get('secure_url')
             elif request.form.get('image_url'):
                 main_image_url = request.form.get('image_url')
@@ -329,8 +328,7 @@ def add_product():
             gallery_files = request.files.getlist('gallery_files')
             for g_file in gallery_files:
                 if g_file and g_file.filename != '':
-                    g_file.stream.seek(0)
-                    g_upload = cloudinary.uploader.upload(g_file.stream, folder="techwix_assets", resource_type="auto")
+                    g_upload = cloudinary.uploader.upload(g_file, folder="techwix_assets", resource_type="auto")
                     file_url = g_upload.get('secure_url')
                     resource_type = g_upload.get('resource_type')
                     media_type = 'video' if resource_type == 'video' else 'image'
@@ -368,8 +366,7 @@ def add_showcase():
         try:
             file = request.files.get('media_file')
             if file and file.filename != '':
-                file.stream.seek(0)
-                upload_res = cloudinary.uploader.upload(file.stream, folder="techwix_assets", resource_type="auto")
+                upload_res = cloudinary.uploader.upload(file, folder="techwix_assets", resource_type="auto")
                 media_url = upload_res.get('secure_url')
                 if upload_res.get('resource_type') == 'video':
                     media_type = 'video'
@@ -450,8 +447,7 @@ def admin_edit(product_id):
         try:
             file = request.files.get('main_image')
             if file and file.filename != '':
-                file.stream.seek(0)
-                upload_res = cloudinary.uploader.upload(file.stream, folder="techwix_assets", resource_type="auto")
+                upload_res = cloudinary.uploader.upload(file, folder="techwix_assets", resource_type="auto")
                 image_url = upload_res.get('secure_url')
             elif request.form.get('image_url'):
                 image_url = request.form.get('image_url')
