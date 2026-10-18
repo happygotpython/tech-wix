@@ -302,7 +302,7 @@ def add_product():
             elif request.form.get('image_url'):
                 main_image_url = request.form.get('image_url')
         except Exception as e:
-            return f"Main image upload error: {e}", 500
+            print(f"Main image upload error: {e}")
 
         conn = get_db()
         cursor = conn.cursor()
@@ -328,21 +328,26 @@ def add_product():
             gallery_files = request.files.getlist('gallery_files')
             for g_file in gallery_files:
                 if g_file and g_file.filename != '':
-                    g_upload = cloudinary.uploader.upload(g_file, folder="techwix_assets", resource_type="auto")
-                    file_url = g_upload.get('secure_url')
-                    resource_type = g_upload.get('resource_type')
-                    media_type = 'video' if resource_type == 'video' else 'image'
-                    
-                    if DATABASE_URL:
-                        cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (%s, %s, %s)', (pid, file_url, media_type))
-                        conn.commit()
-                    else:
-                        with conn:
-                            cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (?, ?, ?)', (pid, file_url, media_type))
+                    try:
+                        g_upload = cloudinary.uploader.upload(g_file, folder="techwix_assets", resource_type="auto")
+                        file_url = g_upload.get('secure_url')
+                        resource_type = g_upload.get('resource_type')
+                        media_type = 'video' if resource_type == 'video' else 'image'
+                        
+                        if DATABASE_URL:
+                            cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (%s, %s, %s)', (pid, file_url, media_type))
+                            conn.commit()
+                        else:
+                            with conn:
+                                cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (?, ?, ?)', (pid, file_url, media_type))
+                    except Exception as ge:
+                        print(f"Gallery file upload error for {g_file.filename}: {ge}")
+                        if DATABASE_URL:
+                            conn.rollback()
         except Exception as db_err:
+            print(f"Database error during product add: {db_err}")
             if DATABASE_URL:
                 conn.rollback()
-            return f"Database or Upload error: {db_err}", 500
         finally:
             conn.close()
 
@@ -371,7 +376,7 @@ def add_showcase():
                 if upload_res.get('resource_type') == 'video':
                     media_type = 'video'
         except Exception as e:
-            return f"Showcase upload error: {e}", 500
+            print(f"Showcase media upload error: {e}")
 
         conn = get_db()
         cursor = conn.cursor()
@@ -389,9 +394,9 @@ def add_showcase():
                         VALUES (?, ?, ?, ?, ?)
                     ''', (title, media_url, media_type, customer_name, caption))
         except Exception as db_err:
+            print(f"Database error during showcase add: {db_err}")
             if DATABASE_URL:
                 conn.rollback()
-            return f"Database error during showcase add: {db_err}", 500
         finally:
             conn.close()
 
@@ -452,7 +457,7 @@ def admin_edit(product_id):
             elif request.form.get('image_url'):
                 image_url = request.form.get('image_url')
         except Exception as e:
-            return f"Edit image upload error: {e}", 500
+            print(f"Edit image upload error: {e}")
             
         if DATABASE_URL:
             cursor.execute('''
