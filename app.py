@@ -168,13 +168,22 @@ def index():
 
     category = request.args.get('category')
     condition = request.args.get('condition')
-    brand = request.args.get('brand')
     search_query = request.args.get('q', '').strip()
     sort = request.args.get('sort', '')
     min_price = request.args.get('min_price', type=float)
     max_price = request.args.get('max_price', type=float)
 
     conn = get_db()
+    cursor = conn.cursor()
+
+    if DATABASE_URL:
+        cursor.execute("SELECT * FROM products ORDER BY id DESC LIMIT 3")
+        scols = [d[0] for d in cursor.description]
+        slideshow_products = [dict(zip(scols, r)) for r in cursor.fetchall()]
+    else:
+        cursor.execute("SELECT * FROM products ORDER BY id DESC LIMIT 3")
+        slideshow_products = cursor.fetchall()
+
     query = "SELECT * FROM products WHERE 1=1"
     params = []
 
@@ -189,10 +198,6 @@ def index():
     elif condition:
         query += " AND condition = %s" if DATABASE_URL else " AND condition = ?"
         params.append(condition)
-
-    if brand:
-        query += " AND name LIKE %s" if DATABASE_URL else " AND name LIKE ?"
-        params.append(f"%{brand}%")
 
     if search_query:
         query += " AND name LIKE %s" if DATABASE_URL else " AND name LIKE ?"
@@ -211,7 +216,6 @@ def index():
     else:
         query += " ORDER BY id DESC"
 
-    cursor = conn.cursor()
     cursor.execute(query, params)
     
     if DATABASE_URL:
@@ -228,7 +232,7 @@ def index():
         
     conn.close()
 
-    return render_template('index.html', products=products, showcase_items=showcase_items, current_category=category, current_condition=condition, current_brand=brand, search_query=search_query, current_sort=sort, min_price=min_price, max_price=max_price, contact_success=contact_success)
+    return render_template('index.html', products=products, slideshow_products=slideshow_products, showcase_items=showcase_items, current_category=category, current_condition=condition, search_query=search_query, current_sort=sort, min_price=min_price, max_price=max_price, contact_success=contact_success)
 
 @app.route('/product/<int:product_id>', methods=['GET', 'POST'])
 def product_detail(product_id):
