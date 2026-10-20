@@ -27,11 +27,9 @@
             
             <div class="flex items-center space-x-4">
                 <a href="{{ url_for('index') }}" class="text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-[#1DB954] transition">Store</a>
-                <!-- Shortcut Contact Us Link -->
                 <a href="{{ url_for('index') }}#contact-section" class="text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-[#1DB954] transition">Contact Us</a>
                 <a href="{{ url_for('cart') }}" class="text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-[#1DB954] transition flex items-center gap-1">Cart</a>
                 
-                <!-- Dark / Light Mode Toggle Button -->
                 <button onclick="toggleTheme()" class="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:text-[#1DB954] dark:hover:text-[#1DB954] border border-gray-200 dark:border-zinc-800 transition text-xs flex items-center gap-1.5" title="Toggle Theme">
                     <svg id="theme-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -41,6 +39,7 @@
 
                 {% if session.get('is_admin') %}
                     <a href="{{ url_for('add_product') }}" class="text-xs font-bold text-black bg-[#1DB954] px-3 py-2 rounded-xl hover:bg-[#1ed760] transition">Add Product</a>
+                    <a href="{{ url_for('add_showcase') }}" class="text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-[#1DB954] transition">Add Showcase</a>
                     <a href="{{ url_for('admin_manage') }}" class="text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:text-[#1DB954] transition">Manage Inventory</a>
                     <a href="{{ url_for('admin_logout') }}" class="text-xs font-semibold text-red-500 hover:underline">Logout</a>
                 {% else %}
@@ -57,7 +56,7 @@
 
     <!-- Footer -->
     <footer class="border-t border-gray-200 dark:border-zinc-800 py-6 text-center text-xs text-zinc-500 dark:text-zinc-500">
-        &copy; 2026 Techwix. All rights reserved. Built for high-performance gadgets.
+        &copy; 2026 Techwix. All rights reserved. Built for high-performance gadgets.[cite: 11]
     </footer>
 
     <!-- Theme Toggle Script -->

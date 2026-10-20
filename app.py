@@ -304,6 +304,25 @@ def add_product():
         except Exception as e:
             print(f"Main image upload error: {e}")
 
+        uploaded_gallery_urls = []
+        try:
+            gallery_files = request.files.getlist('gallery_files')
+            for g_file in gallery_files:
+                if g_file and g_file.filename != '':
+                    g_upload = cloudinary.uploader.upload(g_file, folder="techwix_assets", resource_type="auto")
+                    file_url = g_upload.get('secure_url')
+                    resource_type = g_upload.get('resource_type')
+                    media_type = 'video' if resource_type == 'video' else 'image'
+                    uploaded_gallery_urls.append((file_url, media_type))
+        except Exception as ge:
+            print(f"Gallery file upload error: {ge}")
+
+        if main_image_url == 'https://via.placeholder.com/400' and uploaded_gallery_urls:
+            for f_url, m_type in uploaded_gallery_urls:
+                if m_type == 'image':
+                    main_image_url = f_url
+                    break
+
         conn = get_db()
         cursor = conn.cursor()
         
@@ -315,6 +334,10 @@ def add_product():
                 ''', (name, category, condition, price, storage, main_image_url))
                 pid = cursor.fetchone()[0]
                 cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (%s, %s, %s)', (pid, main_image_url, 'image'))
+                
+                for file_url, media_type in uploaded_gallery_urls:
+                    if file_url != main_image_url:
+                        cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (%s, %s, %s)', (pid, file_url, media_type))
                 conn.commit()
             else:
                 with conn:
@@ -324,26 +347,10 @@ def add_product():
                     ''', (name, category, condition, price, storage, main_image_url))
                     pid = cursor.lastrowid
                     cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (?, ?, ?)', (pid, main_image_url, 'image'))
-
-            gallery_files = request.files.getlist('gallery_files')
-            for g_file in gallery_files:
-                if g_file and g_file.filename != '':
-                    try:
-                        g_upload = cloudinary.uploader.upload(g_file, folder="techwix_assets", resource_type="auto")
-                        file_url = g_upload.get('secure_url')
-                        resource_type = g_upload.get('resource_type')
-                        media_type = 'video' if resource_type == 'video' else 'image'
-                        
-                        if DATABASE_URL:
-                            cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (%s, %s, %s)', (pid, file_url, media_type))
-                            conn.commit()
-                        else:
-                            with conn:
-                                cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (?, ?, ?)', (pid, file_url, media_type))
-                    except Exception as ge:
-                        print(f"Gallery file upload error for {g_file.filename}: {ge}")
-                        if DATABASE_URL:
-                            conn.rollback()
+                    
+                    for file_url, media_type in uploaded_gallery_urls:
+                        if file_url != main_image_url:
+                            cursor.execute('INSERT INTO product_media (product_id, file_url, media_type) VALUES (?, ?, ?)', (pid, file_url, media_type))
         except Exception as db_err:
             print(f"Database error during product add: {db_err}")
             if DATABASE_URL:
