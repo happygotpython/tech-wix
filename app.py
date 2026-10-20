@@ -416,6 +416,27 @@ def add_showcase():
 
     return render_template('add_showcase.html')
 
+@app.route('/admin/showcase/delete/<int:item_id>', methods=['POST'])
+def delete_showcase(item_id):
+    if not session.get('is_admin'):
+        return redirect(url_for('admin_login'))
+    conn = get_db()
+    cursor = conn.cursor()
+    try:
+        if DATABASE_URL:
+            cursor.execute('DELETE FROM customer_showcase WHERE id = %s', (item_id,))
+            conn.commit()
+        else:
+            with conn:
+                conn.execute('DELETE FROM customer_showcase WHERE id = ?', (item_id,))
+    except Exception as e:
+        print(f"Error deleting showcase: {e}")
+        if DATABASE_URL:
+            conn.rollback()
+    finally:
+        conn.close()
+    return redirect(url_for('index'))
+
 @app.route('/admin/manage')
 def admin_manage():
     if not session.get('is_admin'):
